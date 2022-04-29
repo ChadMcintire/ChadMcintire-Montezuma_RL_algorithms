@@ -1,5 +1,6 @@
 from Common.config import get_params
 import gym
+from Brain.brain import Brain
 
 if __name__ == '__main__':
     config = get_params()
@@ -18,4 +19,5 @@ if __name__ == '__main__':
 
     #not sure what the predictor_proportion does
     config.update({"predictor_proportion": 32 / config["n_workers"]})
-
+    
+    brain = Brain(**config)
