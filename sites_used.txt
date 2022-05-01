@@ -1,0 +1,9 @@
+for the main program
+https://github.com/alirezakazemipour/PPO-RND/blob/main/main.py
+https://github.com/openai/random-network-distillation/blob/master/ppo_agent.py
+
+#for help with the agent
+https://github.com/simoninithomas/Deep_reinforcement_learning_Course/tree/master/RND%20Montezuma's%20revenge%20PyTorch
+
+
+

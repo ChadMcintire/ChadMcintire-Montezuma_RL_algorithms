@@ -36,4 +36,10 @@ class RunningMeanStd:
         self.mean, self.var, self.count = update_mean_var_count_from_moments(
         self.mean, self.var, self.count, batch_mean, batch_var, batch_count)
 
+def mean_of_list(func):
+    def function_wrapper(*args, **kwargs):
+        lists = func(*args, **kwargs)
+        return [sum(list) / len(list) for list in lists[:-4]] + \
+        [explained_variance(lists[-2], lists[-1])]
 
+    return function_wrapper
