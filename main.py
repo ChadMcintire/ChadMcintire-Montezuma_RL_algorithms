@@ -1,6 +1,7 @@
 from Common.config import get_params
 import gym
 from Brain.brain import Brain
+from Common.logger import Logger
 
 if __name__ == '__main__':
     config = get_params()
@@ -21,3 +22,6 @@ if __name__ == '__main__':
     config.update({"predictor_proportion": 32 / config["n_workers"]})
     
     brain = Brain(**config)
+
+    logger = Logger(brain, **config)
+
