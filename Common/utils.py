@@ -1,4 +1,5 @@
 import numpy as np
+import gym
 
 def update_mean_var_count_from_moments(mean, var, count, 
                                        batch_mean, batch_var, batch_count):
@@ -43,3 +44,35 @@ def mean_of_list(func):
         [explained_variance(lists[-2], lists[-1])]
 
     return function_wrapper
+
+def make_atari(env_id, max_episode_steps, sticky_action=True, max_and_skip=True):
+    env = gym.make(env_id)
+    env._max_episode_steps = max_episode_steps * 4
+    assert 'NoFrameskip' in env.spec.id
+    if sticky_action:
+        env = StickyActionEnv(env)
+    if max_and_skip:
+        env = RepeatActionEnv(env)
+    env = MontezumaVisitedRoomEnv(env, 3)
+    env = AddRandomStateToInfoEnv(env)
+
+    return env
+
+def StickyActionEnv(gym.Wrapper):
+    def __init__(self, env, p=0.25):
+        self.p = p
+        self.last_action = 0
+
+    def step(self, action):
+        if np.random.uniform() < self.p:
+            action = self.last_action
+
+        self.last_action = action
+        return self.env.step(action)
+
+    def reset(self):
+        self.last_action = 0
+        return self.env.reset()
+
+
+        
