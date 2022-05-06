@@ -32,7 +32,7 @@ def get_params():
                       "lr": 1e-4,
                       "ext_gamma": 0.999,
                       "int_gamma": 0.99,
-                      "lamdba": 0.95,
+                      "lambda": 0.95,
                       "ext_adv_coeff": 2,
                       "int_adv_coeff": 1,
                       "ent_coeff": 0.001, 

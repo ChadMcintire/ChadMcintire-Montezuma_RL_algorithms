@@ -142,7 +142,7 @@ if __name__ == '__main__':
 
             total_next_obs = concatenate(total_next_obs)
             total_int_rewards = brain.calculate_int_rewards(total_next_obs)
-            _, next_int_values, next_ext_values, *_ = brain.get_actions_and_values(next_state, batch=True)
+            _, next_int_values, next_ext_values, *_ = brain.get_actions_and_values(next_states, batch=True)
             
             total_int_rewards = brain.normalize_int_rewards(total_int_rewards)
 

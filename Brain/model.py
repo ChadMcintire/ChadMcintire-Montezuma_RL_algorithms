@@ -120,7 +120,7 @@ class TargetModel(nn.Module, ABC):
         x = F.leaky_relu(self.conv2(x))
         x = F.leaky_relu(self.conv3(x))
         x = x.contiguous()
-        x = x.vie(x.size(0), -1)
+        x = x.view(x.size(0), -1)
 
         return self.encoded_features(x)
 
