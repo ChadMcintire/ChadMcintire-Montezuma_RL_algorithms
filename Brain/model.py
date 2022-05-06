@@ -16,6 +16,7 @@ class PolicyModel(nn.Module, ABC):
         self.state_shape = state_shape
         self.n_actions = n_actions
 
+        #channels, width, height
         c, w, h = state_shape
         self.conv1 = nn.Conv2d(in_channels=c, out_channels=32, kernel_size=8, stride=4)
         self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2)
@@ -47,9 +48,6 @@ class PolicyModel(nn.Module, ABC):
                 nn.init.orthogonal_(layer.weight, gain=np.sqrt(2))
                 #initialize the bias to 0
                 layer.bias.data.zero_()
-            elif isinstance(layer, nn.Linear):
-                nn.init.orthogonal_(layer.weight, gain=np.sqrt(2))
-                layer.bias.data.zero_()
 
         nn.init.orthogonal_(self.fc1.weight, gain=np.sqrt(2))
         self.fc1.bias.data.zero_()
@@ -68,24 +66,24 @@ class PolicyModel(nn.Module, ABC):
         nn.init.orthogonal_(self.ext_value.weight, gain=np.sqrt(0.01))
         self.ext_value.bias.data.zero_()
 
-        def forward(self, inputs):
-            x = inputs / 255.  #set inputs to 0 to 1
-            x = F.relu(self.conv1(x))
-            x = F.relu(self.conv2(x))
-            x = F.relu(self.conv3(x))
-            x = x.contiguous()
-            x = x.view(x.size(0), -1)
-            x = F.relu(self.fc1(x))
-            x = F.relu(self.fc2(x))
-            x_v = x + F.relu(self.extra_value_fc(x))
-            x_pi = x + F.relu(self.extra_policy_fc(x))
-            int_value = self.int_value(x_v)
-            ext_value = self.ext_value(x_v)
-            policy = self.policy(x_pi)
-            probs = F.softmax(policy, dim=1)
-            dist = Categorical(probs)
+    def forward(self, inputs):
+        x = inputs / 255.  #set inputs to 0 to 1
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
+        x = F.relu(self.conv3(x))
+        x = x.contiguous()
+        x = x.view(x.size(0), -1)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x_v = x + F.relu(self.extra_value_fc(x))
+        x_pi = x + F.relu(self.extra_policy_fc(x))
+        int_value = self.int_value(x_v)
+        ext_value = self.ext_value(x_v)
+        policy = self.policy(x_pi)
+        probs = F.softmax(policy, dim=1)
+        dist = Categorical(probs)
 
-            return dist, int_value, ext_value, probs
+        return dist, int_value, ext_value, probs
 
 class TargetModel(nn.Module, ABC):
     def __init__(self, state_shape):
@@ -116,15 +114,15 @@ class TargetModel(nn.Module, ABC):
                 nn.init.orthogonal_(layer.weight, gain=np.sqrt(2))
                 layer.bias.data.zero_()
         
-        def forward(self, inputs):
-            x = inputs
-            x = F.leaky_relu(self.conv1(x))
-            x = F.leaky_relu(self.conv2(x))
-            x = F.leaky_relu(self.conv3(x))
-            x = x.contiguous()
-            x = x.vie(x.size(0), -1)
+    def forward(self, inputs):
+        x = inputs
+        x = F.leaky_relu(self.conv1(x))
+        x = F.leaky_relu(self.conv2(x))
+        x = F.leaky_relu(self.conv3(x))
+        x = x.contiguous()
+        x = x.vie(x.size(0), -1)
 
-            return self.encoded_features(x)
+        return self.encoded_features(x)
 
 class PredictorModel(nn.Module, ABC):
     def __init__(self, state_shape):
@@ -158,14 +156,14 @@ class PredictorModel(nn.Module, ABC):
                 nn.init.orthogonal_(layer.weight, gain=np.sqrt(2))
                 layer.bias.data.zero_()
 
-        def forward(self, inputs):
-            x = inputs
-            x = F.leaky_relu(self.conv1(x))
-            x = F.leaky_relu(self.conv2(x))
-            x = F.leaky_relu(self.conv3(x))
-            x = x.contiguous()
-            x = x.view(x.size(0), -1)
-            x = F.relu(self.fc1(x))
-            x = F.relu(self.fc2(x))
+    def forward(self, inputs):
+        x = inputs
+        x = F.leaky_relu(self.conv1(x))
+        x = F.leaky_relu(self.conv2(x))
+        x = F.leaky_relu(self.conv3(x))
+        x = x.contiguous()
+        x = x.view(x.size(0), -1)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
 
-            return self.encoded_features(x)
+        return self.encoded_features(x)

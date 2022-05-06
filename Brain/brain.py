@@ -1,9 +1,12 @@
 from Brain.model import PolicyModel, PredictorModel, TargetModel
 import torch
 from torch import from_numpy
+import numpy as np
 from torch.optim.adam import Adam
-from Common.utils import RunningMeanStd, mean_of_list
+from Common.utils import RunningMeanStd, mean_of_list, clip_grad_norm_
 from numpy import concatenate  # Make coder faster.
+
+torch.backends.cudnn.benchmark = True
 
 class Brain:
     def __init__(self, **config):
@@ -35,7 +38,7 @@ class Brain:
         with torch.no_grad():
             dist, int_value, ext_value, action_prob, = self.current_policy(state)
             action = dist.sample()
-            log_prob = dist.sample()
+            log_prob = dist.log_prob(action)
         return action.cpu().numpy(), int_value.cpu().numpy().squeeze(), \
                ext_value.cpu().numpy().squeeze(), log_prob.cpu().numpy(), \
                action_prob.cpu().numpy()
