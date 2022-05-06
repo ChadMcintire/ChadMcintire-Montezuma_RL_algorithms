@@ -1,5 +1,6 @@
 from Brain.model import PolicyModel, PredictorModel, TargetModel
 import torch
+from torch import from_numpy
 from torch.optim.adam import Adam
 from Common.utils import RunningMeanStd, mean_of_list
 from numpy import concatenate  # Make coder faster.

@@ -14,6 +14,7 @@ class Logger:
         self.duration = 0
         self.episode = 0
         self.episode_ext_reward = 0
+        self.running_ext_reward = 0
         self.running_int_reward = 0
         self.running_act_prob = 0
         self.running_training_logs = 0
@@ -24,10 +25,12 @@ class Logger:
         self.last_10_ep_rewards = deque(maxlen=10)
         self.running_last_10_ext_r = 0 #just a starting point, not correct
 
+        #if training
         if not self.config["do_test"] and self.config["train_from_scratch"]:
             self.create_wights_folder()
             self.log_params()
 
+        #how are the coefficients for x and y decided
         self.exp_avg = lambda x, y: 0.9 * x + 0.1 * y if (y != 0).all() else y
     
     def create_wights_folder(self):
@@ -60,7 +63,7 @@ class Logger:
                     "iteration": iteration,
                     "episode": episode,
                     "running_reward": self.running_ext_reward,
-                    "visited_rooms": self.visited_rooms
+                    "visited_rooms": self.visited_rooms,
                    },
                    "Models/" + self.log_dir + "/params.pth")
 
@@ -92,7 +95,7 @@ class Logger:
             writer.add_scalar("Running Intrinsic Explained variance", self.running_training_logs[5], iteration)
             writer.add_scalar("Running Extrinsic Explained variance", self.running_training_logs[6], iteration)
 
-        self.off()
+        self.off() #turn timer off while we print iteration values 
         if iteration % self.config["interval"] == 0:
             print("Iter:{}| "
                   "EP:{}| "
