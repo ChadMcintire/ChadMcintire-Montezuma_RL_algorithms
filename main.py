@@ -10,6 +10,7 @@ import numpy as np
 def run_workers(worker, conn):
     worker.step(conn)
 
+
 if __name__ == '__main__':
     config = get_params()
     
@@ -42,7 +43,7 @@ if __name__ == '__main__':
             visited_rooms = checkpoint["visited_rooms"]
             logger.running_ext_reward = running_ext_reward
             logger.episode = episode
-            logger.visted_rooms = visited_rooms
+            logger.visited_rooms = visited_rooms
 
         else:
             init_iteration = 0
@@ -97,7 +98,6 @@ if __name__ == '__main__':
         init_next_states = np.zeros((rollout_base_shape[0],) + config["state_shape"], dtype=np.uint8)
         init_next_obs = np.zeros(rollout_base_shape + config["obs_shape"], dtype=np.uint8)
         
-
         logger.on()
         episode_ext_reward = 0
         concatenate = np.concatenate
@@ -113,6 +113,7 @@ if __name__ == '__main__':
             total_log_probs = init_log_probs
             next_states = init_next_states
             total_next_obs = init_next_obs
+
             
             for t in range(config["rollout_length"]):
                 for worker_id, parent in enumerate(parents):
@@ -164,6 +165,6 @@ if __name__ == '__main__':
                                  total_action_probs[0].max(-1).mean())
 
     else:
-        checkpoint = logger.loads_weights()
+        checkpoint = logger.load_weights()
         play = Play(config["env_name"], brain, checkpoint)
         play.evaluate()
