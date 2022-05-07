@@ -53,7 +53,7 @@ class Brain:
    # https://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do
    #for more details
    ############
-    def choose_mini_batch(self, states, actions, int_returns, ext_returns, advs,                          log_probs, next_states):
+    def choose_mini_batch(self, states, actions, int_returns, ext_returns, advs, log_probs, next_states):
         states = torch.ByteTensor(states).to(self.device)
         next_states = torch.Tensor(next_states).to(self.device)
         actions = torch.ByteTensor(actions).to(self.device)
@@ -64,9 +64,9 @@ class Brain:
 
         #return an an array of random ints equal in shape to the 
         #of the number of minibatches and the size of minibatches
-        indices = np.random.randint(0, len(states), (self.config["n_mini_bach"],                                    self.mini_batch_size))
+        indices = np.random.randint(0, len(states), (self.config["n_mini_batch"], self.mini_batch_size))
 
-        for idx in indicies:
+        for idx in indices:
             yield states[idx], actions[idx], int_returns[idx], \
             ext_returns[idx], advs[idx], log_probs[idx], next_states[idx]
 
@@ -91,7 +91,7 @@ class Brain:
                 mask = (1 - dones[worker][step])
                 #this is trying to say what is my current state value compared to my next state value. as this is in reverse
                 #we are trying to work our way back and give values to each state from the final known reward to the beginning
-                delta = reward[worker][step] + gamma * (extended_values[worker][step + 1]) * mask - extended_values[worker][step]
+                delta = rewards[worker][step] + gamma * (extended_values[worker][step + 1]) * mask - extended_values[worker][step]
                 gae = delta + gamma * lam * mask * gae
 
                 #finally calculate the returns
@@ -137,8 +137,8 @@ class Brain:
         ext_rets = self.get_gae(ext_rewards, ext_values, next_ext_values, 
                                 dones, self.config["ext_gamma"])
 
-        ext_values = conconcatenate(ext_values)
-        ext_adv = ext_rets - ext_values
+        ext_values = concatenate(ext_values)
+        ext_advs = ext_rets - ext_values
 
         int_values = concatenate(int_values)
         int_advs = int_rets - int_values
@@ -157,14 +157,14 @@ class Brain:
             next_state in self.choose_mini_batch(states=states,
                                                  actions=actions,
                                                  int_returns=int_rets,
-                                                 ext_return=ext_rets,
+                                                 ext_returns=ext_rets,
                                                  advs=advs,
                                                  log_probs=log_probs,
                                                  next_states=total_next_obs):
                 dist, int_value, ext_value, _ = self.current_policy(state)
 
                 # Entropy is used to improve exploration by limiting the premature convergence to suboptimal policy
-                entropy = dist.entropy().mean(),
+                entropy = dist.entropy().mean()
                 new_log_prob = dist.log_prob(action)
                 ratio = (new_log_prob - old_log_prob).exp()
                 pg_loss = self.compute_pg_loss(ratio, adv)
@@ -188,3 +188,31 @@ class Brain:
                 
         return pg_losses, ext_v_losses, int_v_losses, rnd_losses, entropies, int_values, \
         int_values, int_rets, ext_values, ext_rets 
+
+    def calculate_int_rewards(self, next_states, batch=True):
+        if not batch:
+            next_states = np.expand_dims(next_states, 0)
+        next_states = np.clip((next_states - self.state_rms.mean) / (self.state_rms.var **0.5), -5, 5, dtype="float32") #dtype to avoid '.float()' call for pytorch
+        next_states = from_numpy(next_states).to(self.device)
+        predictor_encoded_features = self.predictor_model(next_states)
+        target_encoded_features = self.target_model(next_states)
+
+        int_reward = (predictor_encoded_features - target_encoded_features).pow(2).mean(1)
+        if not batch:
+            return int_reward.detach().cpu().numpy()
+        else:
+            return int_reward.detach().cpu().numpy().reshape((self.config["n_workers"], self.config["rollout_length"]))
+
+    def normalize_int_rewards(self, intrinsic_rewards):
+        # OpenAI's usage of Forward filter is definitely wrong;
+        # Because: https://github.com/openai/random-network-distillation/issues/16#issuecomment-488387659
+        gamma = self.config["int_gamma"] #Make code faster
+        intrinsic_returns = [[] for _ in range(self.config["n_workers"])]
+        for worker in range(self.config["n_workers"]):
+            rewems = 0
+            for step in reversed(range(self.config["rollout_length"])):
+                rewems = rewems * gamma + intrinsic_rewards[worker][step]
+                intrinsic_returns[worker].insert(0, rewems)
+        self.int_reward_rms.update(np.ravel(intrinsic_returns).reshape(-1,1))
+
+        return intrinsic_rewards / (self.int_reward_rms.var ** 0.5)
