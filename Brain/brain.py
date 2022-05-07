@@ -124,6 +124,15 @@ class Brain:
         loss = (mask * loss).sum() / torch.max(mask.sum(), torch.Tensor([1]).to(self.device))
         return loss
 
+
+    def optimize(self, loss):
+        self.optimizer.zero_grad()
+        loss.backward()
+        clip_grad_norm_(self.total_trainable_params)
+        # torch.nn.utils.clip_grad_norm_(self.total_trainable_params, 0.5)
+        self.optimizer.step()
+        
+
     #####
     #This was based off the openAI random network distillation
     #https://github.com/openai/random-network-distillation/blob/master/ppo_agent.py
@@ -216,3 +225,21 @@ class Brain:
         self.int_reward_rms.update(np.ravel(intrinsic_returns).reshape(-1,1))
 
         return intrinsic_rewards / (self.int_reward_rms.var ** 0.5)
+
+
+    def set_from_checkpoint(self, checkpoint):
+        self.current_policy.load_state_dict(checkpoint["current_policy_state_dict"])
+        self.predictor_model.load_state_dict(checkpoint["predictor_model_state_dict"])
+        self.target_model.load_state_dict(checkpoint["target_model_state_dict"])
+        for param in self.target_model.parameters():
+            param.requires_grad = False
+        self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        self.state_rms.mean = checkpoint["state_rms_mean"]
+        self.state_rms.var = checkpoint["state_rms_count"]
+        self.state_rms.count = checkpoint["state_rms_count"]
+        self.int_reward_rms.mean = checkpoint["int_reward_rms_mean"]
+        self.int_reward_rms.var = checkpoint["int_reward_rms_var"]
+        self.int_reward_rms.count = checkpoint["int_reward_rms_count"]
+
+    def set_to_eval_mode(self):
+        self.current_policy.eval()

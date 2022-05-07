@@ -1,9 +1,12 @@
 import os
 from torch.utils.tensorboard import SummaryWriter
+import torch
 import datetime
 import time
 import numpy as np
 from collections import deque
+import glob
+
 
 class Logger:
     def __init__(self, brain, **config):
@@ -80,7 +83,7 @@ class Logger:
             self.save_params(self.episode, iteration)
 
         with SummaryWriter("Logs/" + self.log_dir) as writer:
-            writer.add_scalar("Episode Ext Reward", self.episode_ext_reward, self.epsiode)
+            writer.add_scalar("Episode Ext Reward", self.episode_ext_reward, self.episode)
             writer.add_scalar("Running Episode Ext Reward", self.running_ext_reward, self.episode)
             writer.add_scalar("Visited rooms", len(list(self.visited_rooms)), self.episode)
             writer.add_scalar("Running Last 10 Ext Reward", self.running_last_10_ext_r, self.episode)
