@@ -147,8 +147,10 @@ class MontezumaVisitedRoomEnv(gym.Wrapper):
     def step(self, action):
         state, reward, done, info = self.env.step(action)
         #ram = self.unwrapped.ale.getRam()
-        ram = self.unwrapped._get_ram()
+        ram = self.unwrapped.ale.getRAM()
+        #ram = self.unwrapped._get_ram()
         #ram = self.ale.getRam()
+        self.visited_rooms.add(ram[self.room_address])
         assert len(ram) == 128
         if done:
             if "episode" not in info:
