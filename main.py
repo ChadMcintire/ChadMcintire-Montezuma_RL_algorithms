@@ -6,6 +6,7 @@ from Common.runner import Worker
 from torch.multiprocessing import Pipe, Process
 from tqdm import tqdm
 import numpy as np
+from Common.play import Play
 
 def run_workers(worker, conn):
     worker.step(conn)

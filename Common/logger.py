@@ -134,4 +134,4 @@ class Logger:
         checkpoint = torch.load(model_dir[-1] + "/params.pth")
         #this will split the log dir from the rest of the path and save the name
         self.log_dir = model_dir[-1].split(os.sep)[-1]
-        return_checkpoint
+        return checkpoint
