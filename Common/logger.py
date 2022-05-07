@@ -53,7 +53,7 @@ class Logger:
         self.duration = time.time() - self.start_time
 
     def save_params(self, episode, iteration):
-        torch.save({"current_policy_state_dict": self.brain.currency_policy.state_dict(),
+        torch.save({"current_policy_state_dict": self.brain.current_policy.state_dict(),
                     "predictor_model_state_dict": self.brain.predictor_model.state_dict(),
                     "target_model_state_dict": self.brain.target_model.state_dict(),
                     "optimizer_state_dict": self.brain.optimizer.state_dict(),
