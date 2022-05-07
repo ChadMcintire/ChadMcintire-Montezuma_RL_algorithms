@@ -2,9 +2,11 @@ import numpy as np
 import gym
 from copy import deepcopy
 import cv2
+import torch
+from torch._six import inf
 
-def update_mean_var_count_from_moments(mean, var, count, 
-                                       batch_mean, batch_var, batch_count):
+
+def update_mean_var_count_from_moments(mean, var, count, batch_mean, batch_var, batch_count):
    #change from batch mean to mean
    delta = batch_mean - mean
 
@@ -47,7 +49,7 @@ class RunningMeanStd:
         batch_mean = np.mean(x, axis=0)
         batch_var = np.var(x, axis=0)
         batch_count = x.shape[0]
-        self.update_from_moments( batch_mean, batch_var, batch_count)
+        self.update_from_moments(batch_mean, batch_var, batch_count)
 
     def update_from_moments(self, batch_mean, batch_var, batch_count):
         self.mean, self.var, self.count = update_mean_var_count_from_moments(
@@ -67,15 +69,16 @@ def explained_variance(ypred, y):
     vary = np.var(y)
     return np.nan if vary == 0 else 1 - np.var(y - ypred) / vary
 
+
 def mean_of_list(func):
     def function_wrapper(*args, **kwargs):
         lists = func(*args, **kwargs)
 
         #why not use np.mean here?
-        return [sum(list) / len(list) for list in lists[:-4]] + \
-        [explained_variance(lists[-2], lists[-1])]
+        return [sum(list) / len(list) for list in lists[:-4]] + [explained_variance(lists[-4], lists[-3])] + [explained_variance(lists[-2], lists[-1])]
 
     return function_wrapper
+
 
 def make_atari(env_id, max_episode_steps, sticky_action=True, max_and_skip=True):
     env = gym.make(env_id)
@@ -89,6 +92,7 @@ def make_atari(env_id, max_episode_steps, sticky_action=True, max_and_skip=True)
     env = AddRandomStateToInfoEnv(env)
 
     return env
+
 
 class StickyActionEnv(gym.Wrapper):
     def __init__(self, env, p=0.25):
@@ -112,7 +116,6 @@ class StickyActionEnv(gym.Wrapper):
         return self.env.reset()
 
 
-    
 class RepeatActionEnv(gym.Wrapper):
     def __init__(self, env):
         gym.Wrapper.__init__(self, env)
@@ -162,6 +165,7 @@ class AddRandomStateToInfoEnv(gym.Wrapper):
         gym.Wrapper.__init__(self, env)
         self.rng_at_episode_start = deepcopy(self.unwrapped.np_random)
 
+
     def step(self, action):
         state, reward, done, info = self.env.step(action)
         if done:
@@ -170,9 +174,11 @@ class AddRandomStateToInfoEnv(gym.Wrapper):
             info['episode']['rng_at_episode_start'] = self.rng_at_episode_start
         return state, reward, done, info
 
+
     def reset(self):
         self.rng_at_episode_start = deepcopy(self.unwrapped.np_random)
         return self.env.reset()
+
 
 def stack_states(stacked_frames, state, is_new_episode):
     frame = preprocessing(state)
@@ -183,8 +189,6 @@ def stack_states(stacked_frames, state, is_new_episode):
         stacked_frames = stacked_frames[1:, ...]
         stacked_frames = np.concatenate([stacked_frames, np.expand_dims(frame, axis=0)], axis=0)
     return stacked_frames
-
-
 
 
 def preprocessing(img):
