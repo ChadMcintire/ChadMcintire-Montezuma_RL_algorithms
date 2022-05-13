@@ -34,8 +34,8 @@ def update_mean_var_count_from_moments(mean, var, count, batch_mean, batch_var, 
 
 
 ##############
-#As we get more batches we update the mean, variance, and count
-#
+#This is to make the keep a more consistent scale between environments
+#The objective is to divide the intrinsic reward by the RMStd
 ##############
 class RunningMeanStd:
     # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance

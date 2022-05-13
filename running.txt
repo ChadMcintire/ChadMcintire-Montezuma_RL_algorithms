@@ -1,0 +1,8 @@
+#just test the current iteration
+python3 main.p --do_test
+
+#do not train from scratch, start from last point
+python3 main.py --no-train_from_scratch --n_workers=8
+
+#train from scratch
+python3 main.py --train_from_scratch --n_workers=8

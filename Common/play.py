@@ -32,11 +32,8 @@ class Play:
             while not done:
                 action, *_ = self.agent.get_actions_and_values(stacked_states)
                 s_, r, done, info = self.env.step(action)
-                print("info = ", info)
-                #print("s_", shapes_)
-                #print("observation_space", self.env.observation_space())
-                #print(self.env._get_info)
-                print(self.env.unwrapped.ale.getRAM()[3])
+                #to get the room number pirnt the below item
+                #print(self.env.unwrapped.ale.getRAM()[3])
 
                 episode_reward += r
                 clipped_ep_reward += np.sign(r)

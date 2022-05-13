@@ -12,7 +12,12 @@ def get_params():
 
     parser.add_argument("--render", action="store_true", help="The flag determines whether to render each agent or not.")
 
-    parser.add_argument("--train_from_scratch", action="store_false", help="The flag determines whether to train from scratch or continue previous tries.")
+    #parser.add_argument("--train_from_scratch", action="store_false", help="The flag determines whether to train from scratch or continue previous tries.")
+    #parser.add_argument('--no-feature', dest='feature', action='store_false')
+    do_test_parser = parser.add_mutually_exclusive_group(required=False)
+    do_test_parser.add_argument('--train_from_scratch', dest='train_from_scratch', action='store_true')
+    do_test_parser.add_argument('--no-train_from_scratch', dest='train_from_scratch', action='store_false')
+    parser.set_defaults(train_from_scratch=True)
 
     parser_params = parser.parse_args()
 
@@ -21,6 +26,8 @@ def get_params():
     https://arxiv.org/abs/1810.12894    
     """        
 
+                      #stops finding new rooms after this point in rollouts
+                      #"total_rollouts_per_env": int(30e3),
     default_params = {"env_name": "MontezumaRevengeNoFrameskip-v4",
                       "state_shape": (4, 84, 84),
                       "obs_shape": (1, 84, 84),

@@ -212,6 +212,9 @@ class Brain:
         else:
             return int_reward.detach().cpu().numpy().reshape((self.config["n_workers"], self.config["rollout_length"]))
 
+    #This is where we normalize the scale to be more consistent between enviroments
+    #"Lack of Normalization can result in variance of the embedding being extremely low and carrying 
+    #little information to the input" RND paper under REWARD AND OBSERVATION NORMALIZATION
     def normalize_int_rewards(self, intrinsic_rewards):
         # OpenAI's usage of Forward filter is definitely wrong;
         # Because: https://github.com/openai/random-network-distillation/issues/16#issuecomment-488387659
