@@ -1,0 +1,34 @@
+#this should all be done in a virtual env
+
+#roms are found at this page
+http://www.atarimania.com/rom_collection_archive_atari_2600_roms.html
+
+#the information below doesn't work use the following info maybe 
+https://github.com/openai/retro/issues/53
+
+#install atari.py
+pip install atari-py
+
+#make a rom directory
+mkdir roms_dir
+cd roms_dir 
+
+#put this where you you want to store it
+wget http://www.atarimania.com/roms/Roms.rar
+
+#get unrar to unpack it 
+sudo apt install unrar
+
+#unpack the files
+unrar x Roms.rar
+
+#unzip files 
+unzip HC\ ROMS.zip
+unzip ROMS.zip
+
+#go up a level
+cd ..
+
+#install roms
+python -m atari_py.import_roms roms_dir/ROMS
+python -m atari_py.import_roms roms_dir/HC\ ROMS

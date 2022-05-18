@@ -1,0 +1,73 @@
+
+#The version of ubuntu needs ubuntu 20, I think 18 will work as well
+#check the version
+lsb_release -a
+
+#distutils
+#I only think you need the last command but you might need the previous 2, 
+#I believe the first two commands are only for ubuntu 16.04 and older
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt-get update
+sudo apt install python3.6-distutils
+
+#to create a virtual environment
+pip install virtualenv
+
+#create a user environment with one of the below templates
+python3 -m virtualenv -p=<your_python_executable> <virtual_environment_directory>
+virtualenv --python=/usr/bin/python3.6 <path/to/new/virtualenv/>
+
+
+#setup tensorflow
+pip install tensorflow-gpu==1.15
+
+#setup mpi
+sudo apt-get install libopenmpi-dev
+sudo apt-get install python3.6-dev
+pip3 install mpi4py
+
+
+
+#had the following errors installing horovod
+
+ModuleNotFoundError: No module named 'mxnet'
+ModuleNotFoundError: No module named 'torch'
+ModuleNotFoundError: No module named 'tensorflow'
+CMAKE_CUDA_COMPILER= NOTFOUND
+
+Could NOT find Tensorflow (missing: Tensorflow_LIBRARIES) (Required is at
+        least version "1.15.0")
+CUDA compiler was not found in $PATH, but searching again in CUDA Toolkit binary directory
+
+-- Found Tensorflow: -L python3.6/site-packages/tensorflow_core -l:libtensorflow_framework.so.1 (found suitable version "1.15.0", minimum required is "1.15.0")
+
+
+
+#after sudo apt install nvidia-cuda-toolkit
+/usr/include/crt/host_config.h:138:2: error: #error -- unsupported GNU version! gcc versions later than 8 are not supported!
+
+
+#using the following we set up alternative versions of g++ to go to gcc 8
+https://www.fosslinux.com/39386/how-to-install-multiple-versions-of-gcc-and-g-on-ubuntu-20-04.htm#:~:text=With%20GCC%20compilers%20installed%2C%20we,versions%20of%20G%2B%2B%20compilers.&text=Alternatively%2C%20you%20can%20install%20both,single%20command%2C%20as%20shown%20below.
+
+
+#check that nccl is installed if you have pytorch
+python -c "import torch;print(torch.cuda.nccl.version())"
+
+#installs 3 versions of gcc and g++
+
+sudo apt -y install gcc-7 g++-7 gcc-8 g++-8 gcc-9 g++-9
+
+#update pathing
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 7
+sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 7
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8
+sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 9
+sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 9
+
+
+#go to here and select version 8
+sudo update-alternatives --config gcc
+sudo update-alternatives --config g++
+
